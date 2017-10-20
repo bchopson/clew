@@ -5,7 +5,9 @@ itsdangerous==0.24
 Jinja2==2.9.6
 MarkupSafe==1.0
 mongoengine==0.13.0
+py==1.4.34
 pycosat==0.6.1
 pymongo==3.4.0
+pytest==3.2.3
 six==1.10.0
 Werkzeug==0.12.2

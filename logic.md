@@ -13,3 +13,13 @@ Use SAT solver
 [13, 14, 15, 16, 17, 18, 19, 20, 21]
 
 [[1, 8, 13], [-1, -2, 3, 4], [18, 7, 6, -3]...]
+
+
+Each card is in at least one place
+
+Each card is in exactly one place; for each pair of places, a card cannot be in both
+!(p1 and p2) !p1 or !p2
+
+A least one card of EACH category is in the case file
+
+No two cards of ONE category is in the case file
