@@ -39,9 +39,6 @@ class Player(EmbeddedDocument):
     people = ListField(StringField(choices=T_PEOPLE))
     weapons = ListField(StringField(choices=T_WEAPONS))
     rooms = ListField(StringField(choices=T_ROOMS))
-    not_people = ListField(StringField(choices=T_PEOPLE))
-    not_weapons = ListField(StringField(choices=T_WEAPONS))
-    not_rooms = ListField(StringField(choices=T_ROOMS))
 
     @property
     def index(self):
@@ -51,26 +48,22 @@ class Player(EmbeddedDocument):
     def cards(self):
         return self.people + self.weapons + self.rooms
 
-    @property
-    def not_cards(self):
-        return self.not_people + self.not_weapons + self.not_rooms
-
 
 class Guess(EmbeddedDocument):
-    index = IntField()
     guesser = StringField(required=True, choices=T_PEOPLE)
     answerer = StringField(choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
     room = StringField(required=True, choices=T_ROOMS)
-    card = StringField(required=True, choices=T_PEOPLE+T_WEAPONS+T_ROOMS)
+    was_card_shown = BooleanField(required=True)
+    card_shown = StringField(choices=T_PEOPLE+T_WEAPONS+T_ROOMS)
+
+    @property
+    def all_cards(self):
+        return [self.person, self.weapon, self.room]
 
 
 class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
-    players = SortedListField(EmbeddedDocumentField(Player), ordering='index')
-    guesses = SortedListField(EmbeddedDocumentField(Guess), ordering='index')
-
-    answer_person = StringField(choices=T_PEOPLE)
-    answer_weapon = StringField(choices=T_WEAPONS)
-    answer_room = StringField(choices=T_ROOMS)
+    players = SortedListField(EmbeddedDocumentField(Player))
+    guesses = SortedListField(EmbeddedDocumentField(Guess))

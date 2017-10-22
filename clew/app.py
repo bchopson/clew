@@ -68,7 +68,7 @@ def add_guess(game_id):
     guess = Guess(**request.get_json(force=True))
     guess.index = len(game.guesses)
     engine = Engine(game)
-    engine.play_turn(guess)
+    engine.suggest(guess)
     game.save()
     return _to_wrapped_json(guess)
 

@@ -14,6 +14,7 @@ Use SAT solver
 
 [[1, 8, 13], [-1, -2, 3, 4], [18, 7, 6, -3]...]
 
+### Initial Clauses
 
 Each card is in at least one place
 
@@ -23,3 +24,13 @@ Each card is in exactly one place; for each pair of places, a card cannot be in 
 A least one card of EACH category is in the case file
 
 No two cards of ONE category is in the case file
+
+### Suggestion
+
+Players between guesser and answerer do not have the cards
+
+Answerer has one of the cards
+
+If guesser is current player, then answerer has the card shown
+
+If no answerer, either the guesser or the solution has the cards

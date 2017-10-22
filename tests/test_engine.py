@@ -8,6 +8,42 @@ class TestEngine():
     def create_engine(self):
         return Engine(self.create_game())
 
+    def test_players_between(self):
+        engine = self.create_engine()
+        between = engine.players_between('Miss Scarlett', 'Mr. Green')
+        assert sorted(between) == [1, 2]
+        between = engine.players_between('Miss Scarlett', 'Col. Mustard')
+        assert between == []
+        between = engine.players_between('Mrs. White', 'Col. Mustard')
+        assert sorted(between) == [0, 3]
+        between = engine.players_between('Mrs. White', 'Mrs. White')
+        assert sorted(between) == [0, 1, 3]
+
+    def test_human_readable_clause(self):
+        engine = self.create_engine()
+        clause = [1, -1]
+        readable = engine.human_readable_clause(clause)
+        assert readable == "Miss Scarlett has Miss Scarlett || Miss Scarlett doesn't have Miss Scarlett"
+        clause = [22, 112, -118]
+        readable = engine.human_readable_clause(clause)
+        assert readable == "Col. Mustard has Miss Scarlett || Case File has dagger || Case File doesn't have kitchen"
+
+    def test_suggest(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.clauses)
+        guess = Guess(
+            guesser='Col. Mustard',
+            answerer='Mr. Green',
+            person='Mrs. White',
+            weapon='dagger',
+            room='ballroom',
+            was_card_shown=True,
+            card_shown='Mrs. White'
+        )
+        engine.suggest(guess)
+        expected = [[-45], [-49], [-56], [66]]
+        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+
     def test_every_card_present(self):
         engine = self.create_engine()
         ecp = engine.every_card_present()
