@@ -63,7 +63,16 @@ class Guess(EmbeddedDocument):
         return [self.person, self.weapon, self.room]
 
 
+class Accusation(EmbeddedDocument):
+    accuser = StringField(required=True, choices=T_PEOPLE)
+    person = StringField(required=True, choices=T_PEOPLE)
+    weapon = StringField(required=True, choices=T_WEAPONS)
+    room = StringField(required=True, choices=T_ROOMS)
+    is_correct = BooleanField(required=True)
+
+
 class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
     players = SortedListField(EmbeddedDocumentField(Player))
     guesses = SortedListField(EmbeddedDocumentField(Guess))
+    accusations = SortedListField(EmbeddedDocumentField(Accusation))

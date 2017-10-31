@@ -24,7 +24,7 @@ class TestEngine():
         clause = [1, -1]
         readable = engine.human_readable_clause(clause)
         assert readable == "Miss Scarlett has Miss Scarlett || Miss Scarlett doesn't have Miss Scarlett"
-        clause = [22, 112, -118]
+        clause = [22, 91, -97]
         readable = engine.human_readable_clause(clause)
         assert readable == "Col. Mustard has Miss Scarlett || Case File has dagger || Case File doesn't have kitchen"
 
@@ -42,6 +42,34 @@ class TestEngine():
         )
         engine.suggest(guess)
         expected = [[-45], [-49], [-56], [66]]
+        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+
+    def test_accuse_true(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.clauses)
+        accusation = Accusation(
+            accuser='Mrs. White',
+            person='Prof. Plum',
+            weapon='lead pipe',
+            room='lounge',
+            is_correct=True
+        )
+        engine.accuse(accusation)
+        expected = [[90], [94], [104]]
+        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+
+    def test_accuse_false(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.clauses)
+        accusation = Accusation(
+            accuser='Mrs. White',
+            person='Prof. Plum',
+            weapon='lead pipe',
+            room='lounge',
+            is_correct=False
+        )
+        engine.accuse(accusation)
+        expected = [[-90], [-94], [-104]]
         assert sorted(initial_clauses + expected) == sorted(engine.clauses)
 
     def test_every_card_present(self):

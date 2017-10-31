@@ -21,7 +21,7 @@ class Engine():
 
     @property
     def case_file_index(self):
-        return self.places
+        return self.places - 1
 
     def players_between(self, player1, player2):
       player1_index = PEOPLE.index(player1)
@@ -87,6 +87,20 @@ class Engine():
               cIdx = self.CARDS.index(card)
               self.clauses.append([self.index_pair_number(cIdx, self.case_file_index), self.index_pair_number(cIdx, guesser_idx)])
         self.game.guesses.append(guess)
+
+    def accuse(self, accusation):
+        if (accusation.is_correct):
+            self.clauses += [
+                [self.index_pair_number(self.CARDS.index(accusation.person), self.case_file_index)],
+                [self.index_pair_number(self.CARDS.index(accusation.weapon), self.case_file_index)],
+                [self.index_pair_number(self.CARDS.index(accusation.room), self.case_file_index)]
+            ]
+        else:
+            self.clauses += [
+                [-self.index_pair_number(self.CARDS.index(accusation.person), self.case_file_index)],
+                [-self.index_pair_number(self.CARDS.index(accusation.weapon), self.case_file_index)],
+                [-self.index_pair_number(self.CARDS.index(accusation.room), self.case_file_index)]
+            ]
 
     def add_initial_clauses(self):
         self.clauses = (
