@@ -30,8 +30,9 @@ class TestEngine():
 
     def test_suggest(self):
         engine = self.create_engine()
-        initial_clauses = list(engine.clauses)
+        initial_clauses = list(engine.game.clauses)
         guess = Guess(
+            index=0,
             guesser='Col. Mustard',
             answerer='Mr. Green',
             person='Mrs. White',
@@ -42,12 +43,13 @@ class TestEngine():
         )
         engine.suggest(guess)
         expected = [[-45], [-49], [-56], [66]]
-        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
 
     def test_accuse_true(self):
         engine = self.create_engine()
-        initial_clauses = list(engine.clauses)
+        initial_clauses = list(engine.game.clauses)
         accusation = Accusation(
+            index=0,
             accuser='Mrs. White',
             person='Prof. Plum',
             weapon='lead pipe',
@@ -56,11 +58,11 @@ class TestEngine():
         )
         engine.accuse(accusation)
         expected = [[90], [94], [104]]
-        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
 
     def test_accuse_false(self):
         engine = self.create_engine()
-        initial_clauses = list(engine.clauses)
+        initial_clauses = list(engine.game.clauses)
         accusation = Accusation(
             accuser='Mrs. White',
             person='Prof. Plum',
@@ -70,7 +72,7 @@ class TestEngine():
         )
         engine.accuse(accusation)
         expected = [[-90], [-94], [-104]]
-        assert sorted(initial_clauses + expected) == sorted(engine.clauses)
+        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
 
     def test_every_card_present(self):
         engine = self.create_engine()

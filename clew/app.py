@@ -3,12 +3,14 @@ import json
 
 import mongoengine
 from flask import abort, g, jsonify, Flask, request
+from flask_cors import CORS
 
 from .models import *
 from .engine import Engine
 
 
 app = Flask(__name__)
+CORS(app)
 
 api_prefix = '/api/v1'
 
@@ -41,6 +43,8 @@ def create_game():
     game = Game(**request.get_json(force=True))
     if (len(game.players) < 3 or len(game.players) > 6):
         abort(400)
+    engine = Engine(game)
+    engine.add_initial_clauses()
     return _to_wrapped_json(game.save())
 
 @app.route(f'{api_prefix}/games/<string:game_id>/guesses', methods=['GET'])
@@ -54,7 +58,6 @@ def get_guess(game_id, index=None):
         return jsonify({ 'data': [json.loads(guess.to_json()) for guess in game.guesses] })
     else:
         try:
-            # return jsonify({ 'data': game.guesses.get(index=index) })
             return _to_wrapped_json(game.guesses.get(index=index))
         except DoesNotExist:
             abort(404)
@@ -71,6 +74,34 @@ def add_guess(game_id):
     engine.suggest(guess)
     game.save()
     return _to_wrapped_json(guess)
+
+@app.route(f'{api_prefix}/games/<string:game_id>/accusations', methods=['GET'])
+@app.route(f'{api_prefix}/games/<string:game_id>/accusations/<int:index>', methods=['GET'])
+def get_accusation(game_id, index=None):
+    game = Game.objects.get(id=game_id)
+    if game is None:
+        abort(404)
+
+    if index is None:
+        return jsonify({ 'data': [json.loads(accusation.to_json()) for accusation in game.accusations] })
+    else:
+        try:
+            return _to_wrapped_json(game.accusations.get(index=index))
+        except DoesNotExist:
+            abort(404)
+
+@app.route(f'{api_prefix}/games/<string:game_id>/accusations', methods=['POST'])
+def add_accusation(game_id):
+    game = Game.objects.get(id=game_id)
+    if game is None:
+        abort(404)
+
+    accusation = accusation(**request.get_json(force=True))
+    accusation.index = len(game.accusations)
+    engine = Engine(game)
+    engine.suggest(accusation)
+    game.save()
+    return _to_wrapped_json(accusation)
 
 def _to_wrapped_json(mongo_object):
     return jsonify({ 'data': json.loads(mongo_object.to_json()) })

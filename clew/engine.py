@@ -9,11 +9,9 @@ from .models import PEOPLE, WEAPONS, ROOMS
 class Engine():
 
     CARDS = PEOPLE + WEAPONS + ROOMS
-    clauses = []
 
     def __init__(self, game):
         self.game = game
-        self.add_initial_clauses()
 
     @property
     def places(self):
@@ -24,16 +22,14 @@ class Engine():
         return self.places - 1
 
     def players_between(self, player1, player2):
-      player1_index = PEOPLE.index(player1)
-      player2_index = PEOPLE.index(player2)
-      if player2_index > player1_index:
-        return list(range(player1_index + 1, player2_index))
-      else:
-        return list(range(player1_index + 1, len(self.game.players))) + \
-            list(range(0, player2_index))
-
-    def card_player_pair_number(self, card, player):
-        return self.index_pair_number(self.CARDS.index(card), player.index)
+        playerIndices = [player.index for player in self.game.players]
+        player1_index = PEOPLE.index(player1)
+        player2_index = PEOPLE.index(player2)
+        if player2_index > player1_index:
+            return list(range(player1_index + 1, player2_index))
+        else:
+            return list(range(player1_index + 1, len(self.game.players))) + \
+        list(range(0, player2_index))
 
     def index_pair_number(self, card_index, player_index):
         return player_index * len(self.CARDS) + card_index + 1
@@ -41,7 +37,7 @@ class Engine():
     @property
     def human_readable_clauses(self):
         readable = ''
-        for clause in self.clauses:
+        for clause in self.game.clauses:
             readable += '{}\n'.format(self.human_readable_clause(clause))
         return readable
 
@@ -64,46 +60,46 @@ class Engine():
           for pIdx in self.players_between(guess.guesser, guess.answerer):
             for card in guess.all_cards:
               cIdx = self.CARDS.index(card)
-              self.clauses.append([-self.index_pair_number(cIdx, pIdx)])
+              self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
 
           if guess.card_shown is None:
             for card in guess.all_cards:
               cIdx = self.CARDS.index(card)
-              self.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
+              self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
           else:
             cIdx = self.CARDS.index(guess.card_shown)
-            self.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
+            self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
         else:
           for pIdx in self.players_between(guess.guesser, guess.guesser):
             for card in guess.all_cards:
               cIdx = self.CARDS.index(card)
-              self.clauses.append([-self.index_pair_number(cIdx, pIdx)])
+              self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
           if guess.guesser == self.game.primary_player:
             for card in guess.all_cards:
               cIdx = self.CARDS.index(card)
-              self.clauses.append([self.index_pair_number(cIdx, self.case_file_index)])
+              self.game.clauses.append([self.index_pair_number(cIdx, self.case_file_index)])
           else:
             for card in guess.all_cards:
               cIdx = self.CARDS.index(card)
-              self.clauses.append([self.index_pair_number(cIdx, self.case_file_index), self.index_pair_number(cIdx, guesser_idx)])
+              self.game.clauses.append([self.index_pair_number(cIdx, self.case_file_index), self.index_pair_number(cIdx, guesser_idx)])
         self.game.guesses.append(guess)
 
     def accuse(self, accusation):
         if (accusation.is_correct):
-            self.clauses += [
+            self.game.clauses += [
                 [self.index_pair_number(self.CARDS.index(accusation.person), self.case_file_index)],
                 [self.index_pair_number(self.CARDS.index(accusation.weapon), self.case_file_index)],
                 [self.index_pair_number(self.CARDS.index(accusation.room), self.case_file_index)]
             ]
         else:
-            self.clauses += [
+            self.game.clauses += [
                 [-self.index_pair_number(self.CARDS.index(accusation.person), self.case_file_index)],
                 [-self.index_pair_number(self.CARDS.index(accusation.weapon), self.case_file_index)],
                 [-self.index_pair_number(self.CARDS.index(accusation.room), self.case_file_index)]
             ]
 
     def add_initial_clauses(self):
-        self.clauses = (
+        self.game.clauses = (
             self.every_card_present() +
             self.card_one_place() +
             self.case_file_each_type() +
@@ -137,6 +133,7 @@ class Engine():
             for card in ROOMS]]
         )
 
+    # Only one card of each category is in the case file
     def case_file_type_exclusive(self):
         return (
             [[-self.index_pair_number(self.CARDS.index(pair[0]), self.case_file_index),
@@ -152,6 +149,7 @@ class Engine():
             for pair in itertools.combinations(ROOMS, 2)]
         )
 
+    # The player's hand
     def player_hand(self):
         player = next((p for p in self.game.players if p.name == self.game.primary_player), None)
         return [[self.index_pair_number(self.CARDS.index(card), player.index)]

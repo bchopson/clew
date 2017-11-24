@@ -50,6 +50,7 @@ class Player(EmbeddedDocument):
 
 
 class Guess(EmbeddedDocument):
+    index = IntField(required=True)
     guesser = StringField(required=True, choices=T_PEOPLE)
     answerer = StringField(choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
@@ -64,6 +65,7 @@ class Guess(EmbeddedDocument):
 
 
 class Accusation(EmbeddedDocument):
+    index = IntField(required=True)
     accuser = StringField(required=True, choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
@@ -73,6 +75,7 @@ class Accusation(EmbeddedDocument):
 
 class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
-    players = SortedListField(EmbeddedDocumentField(Player))
+    players = EmbeddedDocumentListField(Player)
     guesses = SortedListField(EmbeddedDocumentField(Guess))
     accusations = SortedListField(EmbeddedDocumentField(Accusation))
+    clauses = ListField(ListField(IntField()))
