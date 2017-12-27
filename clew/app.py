@@ -27,6 +27,18 @@ def teardown_request(exception):
     if hasattr(g, 'db'):
         g.db.close()
 
+@app.route(f'{api_prefix}/people', methods=['GET'])
+def get_people():
+    return jsonify({ 'data': PEOPLE })
+
+@app.route(f'{api_prefix}/weapons', methods=['GET'])
+def get_weapons():
+    return jsonify({ 'data': WEAPONS })
+
+@app.route(f'{api_prefix}/rooms', methods=['GET'])
+def get_rooms():
+    return jsonify({ 'data': ROOMS })
+
 @app.route(f'{api_prefix}/games', methods=['GET'])
 @app.route(f'{api_prefix}/games/<string:game_id>', methods=['GET'])
 def get_game(game_id=None):
