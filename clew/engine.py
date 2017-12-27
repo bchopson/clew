@@ -97,6 +97,7 @@ class Engine():
                 [-self.index_pair_number(self.CARDS.index(accusation.weapon), self.case_file_index)],
                 [-self.index_pair_number(self.CARDS.index(accusation.room), self.case_file_index)]
             ]
+        self.game.accusations.append(accusation)
 
     def add_initial_clauses(self):
         self.game.clauses = (

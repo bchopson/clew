@@ -108,10 +108,10 @@ def add_accusation(game_id):
     if game is None:
         abort(404)
 
-    accusation = accusation(**request.get_json(force=True))
+    accusation = Accusation(**request.get_json(force=True))
     accusation.index = len(game.accusations)
     engine = Engine(game)
-    engine.suggest(accusation)
+    engine.accuse(accusation)
     game.save()
     return _to_wrapped_json(accusation)
 
