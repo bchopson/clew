@@ -43,9 +43,9 @@ def get_rooms():
 @app.route(f'{api_prefix}/games/<string:game_id>', methods=['GET'])
 def get_game(game_id=None):
     if game_id is None:
-        return _to_wrapped_json(Game.objects())
+        return _to_wrapped_json(Game.objects.exclude('clauses'))
     else:
-        game = Game.objects.get(id=game_id)
+        game = Game.objects.exclude('clauses').get(id=game_id)
         if game is None:
             abort(404)
         return _to_wrapped_json(game)
@@ -57,7 +57,8 @@ def create_game():
         abort(400)
     engine = Engine(game)
     engine.add_initial_clauses()
-    return _to_wrapped_json(game.save())
+    game.save()
+    return _to_wrapped_json(Game.objects.exclude('clauses').get(id=game.id))
 
 @app.route(f'{api_prefix}/games/<string:game_id>/guesses', methods=['GET'])
 @app.route(f'{api_prefix}/games/<string:game_id>/guesses/<int:index>', methods=['GET'])
