@@ -1,6 +1,7 @@
 #!env/bin/python3
 
 import itertools
+import pycosat
 from mongoengine import *
 
 from .models import PEOPLE, WEAPONS, ROOMS
@@ -9,27 +10,51 @@ from .models import PEOPLE, WEAPONS, ROOMS
 class Engine():
 
     CARDS = PEOPLE + WEAPONS + ROOMS
+    UNKNOWN = 'unknown'
+    FALSE = 'false'
+    TRUE = 'true'
 
     def __init__(self, game):
         self.game = game
 
     @property
-    def places(self):
-        return len(self.game.players) + 1
+    def case_file_index(self):
+        return len(self.game.players)
 
     @property
-    def case_file_index(self):
-        return self.places - 1
+    def notebook(self):
+        literals = [{
+                        'player': PEOPLE[p] if p < len(PEOPLE) else 'Case File',
+                        'card': self.CARDS[c],
+                        'index': self.index_pair_number(c, p)
+                    }
+                     for p in range(len(self.game.players)+1)
+                    for c in range(len(self.CARDS))]
+        return [{
+                    'player': literal['player'],
+                    'card': literal['card'],
+                    'has_card': self.test_literal(literal['index']),
+                } for literal in literals]
+
+    def test_literal(self, literal):
+        result = self.UNKNOWN
+        if pycosat.solve(self.game.clauses + [[literal]]) == 'UNSAT':
+            result = self.FALSE;
+        elif pycosat.solve(self.game.clauses + [[-literal]]) == 'UNSAT':
+            result = self.TRUE
+        return result
 
     def players_between(self, player1, player2):
         playerIndices = [player.index for player in self.game.players]
+        playerIndices.sort()
         player1_index = PEOPLE.index(player1)
         player2_index = PEOPLE.index(player2)
-        if player2_index > player1_index:
-            return list(range(player1_index + 1, player2_index))
-        else:
-            return list(range(player1_index + 1, len(self.game.players))) + \
-        list(range(0, player2_index))
+        between = []
+        currentIdx = (playerIndices.index(player1_index) + 1) % 4
+        while playerIndices[currentIdx] != player2_index:
+            between.append(playerIndices[currentIdx])
+            currentIdx = (currentIdx + 1) % 4
+        return between
 
     def index_pair_number(self, card_index, player_index):
         return player_index * len(self.CARDS) + card_index + 1
@@ -45,7 +70,7 @@ class Engine():
         readable = ''
         for i in range(len(clause)):
             prop = clause[i]
-            player_index = abs(prop) // len(self.CARDS)
+            player_index = (abs(prop) - 1) // len(self.CARDS)
             card_index = abs(prop) - (player_index * len(self.CARDS)) - 1
             sep = ' || ' if i < len(clause) - 1 else ''
             output = '{} has {}{}' if prop >= 0 else "{} doesn't have {}{}"
@@ -63,9 +88,10 @@ class Engine():
               self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
 
           if guess.card_shown is None:
-            for card in guess.all_cards:
-              cIdx = self.CARDS.index(card)
-              self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
+            self.game.clauses.append(
+                [self.index_pair_number(self.CARDS.index(card), answerer_idx)
+                 for card in guess.all_cards]
+            )
           else:
             cIdx = self.CARDS.index(guess.card_shown)
             self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
@@ -111,14 +137,14 @@ class Engine():
     # Each card is in at least one place, including the case file
     def every_card_present(self):
         return [[self.index_pair_number(c, p)
-                for p in range(self.places)]
+                for p in range(len(self.game.players)+1)]
                for c in range(len(self.CARDS))]
 
     # Each card is in exactly one place
     def card_one_place(self):
         return [[-self.index_pair_number(self.CARDS.index(card), pair[0]),
                  -self.index_pair_number(self.CARDS.index(card), pair[1])]
-                for pair in itertools.combinations(range(self.places), 2)
+                for pair in itertools.combinations(range(len(self.game.players)+1), 2)
                for card in self.CARDS]
 
     # At least one card of each category is in the case file

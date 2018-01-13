@@ -116,6 +116,12 @@ def add_accusation(game_id):
     game.save()
     return _to_wrapped_json(accusation)
 
+@app.route(f'{api_prefix}/games/<string:game_id>/notebook', methods=['GET'])
+def get_notebook(game_id):
+    game = Game.objects.get(id=game_id)
+    engine = Engine(game)
+    return jsonify({ 'data': engine.notebook })
+
 def _to_wrapped_json(mongo_object):
     return jsonify({ 'data': json.loads(mongo_object.to_json()) })
 

@@ -34,15 +34,16 @@ T_ROOMS = tuple(ROOMS)
 
 class Player(EmbeddedDocument):
 
+    def __init__(self, *args, **kwargs):
+        EmbeddedDocument.__init__(self, *args, **kwargs)
+        self.index = PEOPLE.index(kwargs['name']) if kwargs['name'] else -1
+
     name = StringField(required=True, choices=T_PEOPLE)
     card_count = IntField(required=True)
     people = ListField(StringField(choices=T_PEOPLE))
     weapons = ListField(StringField(choices=T_WEAPONS))
     rooms = ListField(StringField(choices=T_ROOMS))
-
-    @property
-    def index(self):
-        return PEOPLE.index(self.name) if self.name else -1
+    index = IntField()
 
     @property
     def cards(self):
@@ -52,12 +53,12 @@ class Player(EmbeddedDocument):
 class Guess(EmbeddedDocument):
     index = IntField(required=True)
     guesser = StringField(required=True, choices=T_PEOPLE)
-    answerer = StringField(choices=T_PEOPLE+('',))
+    answerer = StringField(choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
     room = StringField(required=True, choices=T_ROOMS)
     was_card_shown = BooleanField(required=True)
-    card_shown = StringField(choices=T_PEOPLE+T_WEAPONS+T_ROOMS+('',))
+    card_shown = StringField(choices=T_PEOPLE+T_WEAPONS+T_ROOMS)
 
     @property
     def all_cards(self):
@@ -75,7 +76,7 @@ class Accusation(EmbeddedDocument):
 
 class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
-    players = EmbeddedDocumentListField(Player)
+    players = SortedListField(EmbeddedDocumentField(Player), ordering="index")
     guesses = SortedListField(EmbeddedDocumentField(Guess), ordering="index")
     accusations = SortedListField(EmbeddedDocumentField(Accusation), ordering="index")
     clauses = ListField(ListField(IntField()))

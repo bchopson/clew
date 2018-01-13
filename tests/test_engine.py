@@ -9,15 +9,19 @@ class TestEngine():
         return Engine(self.create_game())
 
     def test_players_between(self):
-        engine = self.create_engine()
+        engine = Engine(self.create_game_sparse_players())
         between = engine.players_between('Miss Scarlett', 'Mr. Green')
-        assert sorted(between) == [1, 2]
-        between = engine.players_between('Miss Scarlett', 'Col. Mustard')
-        assert between == []
-        between = engine.players_between('Mrs. White', 'Col. Mustard')
-        assert sorted(between) == [0, 3]
+        assert sorted(between) == [2]
+        between = engine.players_between('Mr. Green', 'Miss Scarlett')
+        assert sorted(between) == [5]
+        between = engine.players_between('Mr. Green', 'Mrs. White')
+        assert between == [5, 0]
+        between = engine.players_between('Miss Scarlett', 'Prof. Plum')
+        assert sorted(between) == [2, 3]
+        between = engine.players_between('Prof. Plum', 'Miss Scarlett')
+        assert sorted(between) == []
         between = engine.players_between('Mrs. White', 'Mrs. White')
-        assert sorted(between) == [0, 1, 3]
+        assert sorted(between) == [0, 3, 5]
 
     def test_human_readable_clause(self):
         engine = self.create_engine()
@@ -108,6 +112,21 @@ class TestEngine():
         ph = engine.player_hand()
         assert sorted(ph) == sorted([[22], [28], [33], [35]])
 
+    def create_game_sparse_players(self):
+        game = Game()
+        game.primary_player = PEOPLE[0]
+        game.players = [
+            self.create_player('Miss Scarlett', 4),
+            self.create_player('Mrs. White', 4),
+            self.create_player('Mr. Green', 5),
+            self.create_player('Prof. Plum', 5),
+        ]
+        game.players[0].people = ['Miss Scarlett']
+        game.players[0].weapons = ['dagger', 'candlestick']
+        game.players[0].rooms = ['ballroom']
+        return game;
+
+
     def create_game(self):
         game = Game()
         game.primary_player = PEOPLE[1]
@@ -123,9 +142,7 @@ class TestEngine():
         return game
 
     def create_player(self, name, card_count):
-        player = Player()
-        player.name = name
-        player.card_count = card_count
+        player = Player(name=name,card_count=card_count)
         return player
 
 if __name__ == '__main__':
