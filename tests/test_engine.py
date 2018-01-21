@@ -32,7 +32,7 @@ class TestEngine():
         readable = engine.human_readable_clause(clause)
         assert readable == "Col. Mustard has Miss Scarlett || Case File has dagger || Case File doesn't have kitchen"
 
-    def test_suggest(self):
+    def test_suggest_discover_opponent(self):
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
         guess = Guess(
@@ -48,6 +48,22 @@ class TestEngine():
         engine.suggest(guess)
         expected = [[-45], [-49], [-56], [66]]
         assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
+
+    def test_suggest_discover_case_file(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.game.clauses)
+        guess = Guess(
+            index=0,
+            guesser='Col. Mustard',
+            person='Miss Scarlett',
+            weapon='dagger',
+            room='billiard room',
+            was_card_shown=False,
+        )
+        engine.suggest(guess)
+        expected = [[-1], [-7], [-16], [-43], [-49], [-58], [-64], [-70], [-79], [100]]
+        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
+
 
     def test_accuse_true(self):
         engine = self.create_engine()

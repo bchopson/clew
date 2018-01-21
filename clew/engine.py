@@ -19,16 +19,26 @@ class Engine():
 
     @property
     def case_file_index(self):
-        return len(self.game.players)
+        return max([player.index for player in self.game.players]) + 1
+
+    @property
+    def all_indices(self):
+        player_indices = [player.index for player in self.game.players]
+        player_indices.append(self.case_file_index)
+        return player_indices
+
+    @property
+    def primary_player(self):
+        return next((p for p in self.game.players if p.name == self.game.primary_player), None)
 
     @property
     def notebook(self):
         literals = [{
-                        'player': PEOPLE[p] if p < len(PEOPLE) else 'Case File',
+                        'player': 'Case File' if p == self.case_file_index else PEOPLE[p],
                         'card': self.CARDS[c],
                         'index': self.index_pair_number(c, p)
                     }
-                     for p in range(len(self.game.players)+1)
+                     for p in self.all_indices
                     for c in range(len(self.CARDS))]
         return [{
                     'player': literal['player'],
@@ -50,10 +60,10 @@ class Engine():
         player1_index = PEOPLE.index(player1)
         player2_index = PEOPLE.index(player2)
         between = []
-        currentIdx = (playerIndices.index(player1_index) + 1) % 4
+        currentIdx = (playerIndices.index(player1_index) + 1) % len(playerIndices)
         while playerIndices[currentIdx] != player2_index:
             between.append(playerIndices[currentIdx])
-            currentIdx = (currentIdx + 1) % 4
+            currentIdx = (currentIdx + 1) % len(playerIndices)
         return between
 
     def index_pair_number(self, card_index, player_index):
@@ -81,33 +91,37 @@ class Engine():
     def suggest(self, guess):
         guesser_idx = PEOPLE.index(guess.guesser)
         if guess.was_card_shown:
-          answerer_idx = PEOPLE.index(guess.answerer)
-          for pIdx in self.players_between(guess.guesser, guess.answerer):
-            for card in guess.all_cards:
-              cIdx = self.CARDS.index(card)
-              self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
+            answerer_idx = PEOPLE.index(guess.answerer)
+            for pIdx in self.players_between(guess.guesser, guess.answerer):
+                for card in guess.all_cards:
+                    cIdx = self.CARDS.index(card)
+                    self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
 
-          if guess.card_shown is None:
-            self.game.clauses.append(
-                [self.index_pair_number(self.CARDS.index(card), answerer_idx)
-                 for card in guess.all_cards]
-            )
-          else:
-            cIdx = self.CARDS.index(guess.card_shown)
-            self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
+            if guess.card_shown is None:
+                self.game.clauses.append(
+                    [self.index_pair_number(self.CARDS.index(card), answerer_idx)
+                     for card in guess.all_cards]
+                )
+            else:
+                cIdx = self.CARDS.index(guess.card_shown)
+                self.game.clauses.append([self.index_pair_number(cIdx, answerer_idx)])
         else:
-          for pIdx in self.players_between(guess.guesser, guess.guesser):
-            for card in guess.all_cards:
-              cIdx = self.CARDS.index(card)
-              self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
-          if guess.guesser == self.game.primary_player:
-            for card in guess.all_cards:
-              cIdx = self.CARDS.index(card)
-              self.game.clauses.append([self.index_pair_number(cIdx, self.case_file_index)])
-          else:
-            for card in guess.all_cards:
-              cIdx = self.CARDS.index(card)
-              self.game.clauses.append([self.index_pair_number(cIdx, self.case_file_index), self.index_pair_number(cIdx, guesser_idx)])
+            for pIdx in self.players_between(guess.guesser, guess.guesser):
+                for card in guess.all_cards:
+                    cIdx = self.CARDS.index(card)
+                    self.game.clauses.append([-self.index_pair_number(cIdx, pIdx)])
+            if guess.guesser == self.game.primary_player:
+                for card in guess.all_cards:
+                    if card not in self.primary_player.cards:
+                        cIdx = self.CARDS.index(card)
+                        self.game.clauses.append([self.index_pair_number(cIdx, self.case_file_index)])
+            else:
+                for card in guess.all_cards:
+                    cIdx = self.CARDS.index(card)
+                    self.game.clauses.append([
+                        self.index_pair_number(cIdx, self.case_file_index),
+                        self.index_pair_number(cIdx, guesser_idx)
+                    ])
         self.game.guesses.append(guess)
 
     def accuse(self, accusation):
@@ -137,14 +151,14 @@ class Engine():
     # Each card is in at least one place, including the case file
     def every_card_present(self):
         return [[self.index_pair_number(c, p)
-                for p in range(len(self.game.players)+1)]
+                for p in self.all_indices]
                for c in range(len(self.CARDS))]
 
     # Each card is in exactly one place
     def card_one_place(self):
         return [[-self.index_pair_number(self.CARDS.index(card), pair[0]),
                  -self.index_pair_number(self.CARDS.index(card), pair[1])]
-                for pair in itertools.combinations(range(len(self.game.players)+1), 2)
+                for pair in itertools.combinations(self.all_indices, 2)
                for card in self.CARDS]
 
     # At least one card of each category is in the case file
