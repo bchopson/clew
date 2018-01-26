@@ -32,6 +32,7 @@ ROOMS = [
 ]
 T_ROOMS = tuple(ROOMS)
 
+
 class Player(EmbeddedDocument):
 
     def __init__(self, *args, **kwargs):
@@ -78,5 +79,6 @@ class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
     players = SortedListField(EmbeddedDocumentField(Player), ordering="index")
     guesses = SortedListField(EmbeddedDocumentField(Guess), ordering="index")
-    accusations = SortedListField(EmbeddedDocumentField(Accusation), ordering="index")
+    accusations = SortedListField(
+        EmbeddedDocumentField(Accusation), ordering="index")
     clauses = ListField(ListField(IntField()))

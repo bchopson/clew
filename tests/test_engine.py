@@ -2,6 +2,7 @@ import pytest
 
 from clew import *
 
+
 class TestEngine():
 
     @pytest.fixture
@@ -27,10 +28,14 @@ class TestEngine():
         engine = self.create_engine()
         clause = [1, -1]
         readable = engine.human_readable_clause(clause)
-        assert readable == "Miss Scarlett has Miss Scarlett || Miss Scarlett doesn't have Miss Scarlett"
+        assert readable == (
+            "Miss Scarlett has Miss Scarlett "
+            "|| Miss Scarlett doesn't have Miss Scarlett")
         clause = [22, 91, -97]
         readable = engine.human_readable_clause(clause)
-        assert readable == "Col. Mustard has Miss Scarlett || Case File has dagger || Case File doesn't have kitchen"
+        assert readable == (
+            "Col. Mustard has Miss Scarlett || Case File has dagger "
+            "|| Case File doesn't have kitchen")
 
     def test_suggest_discover_opponent(self):
         engine = self.create_engine()
@@ -47,7 +52,8 @@ class TestEngine():
         )
         engine.suggest(guess)
         expected = [[-45], [-49], [-56], [66]]
-        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
+        assert (
+            sorted(initial_clauses + expected) == sorted(engine.game.clauses))
 
     def test_suggest_discover_case_file(self):
         engine = self.create_engine()
@@ -61,9 +67,11 @@ class TestEngine():
             was_card_shown=False,
         )
         engine.suggest(guess)
-        expected = [[-1], [-7], [-16], [-43], [-49], [-58], [-64], [-70], [-79], [100]]
-        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
-
+        expected = [
+            [-1], [-7], [-16], [-43], [-49], [-58], [-64], [-70], [-79], [100]
+        ]
+        assert (
+            sorted(initial_clauses + expected) == sorted(engine.game.clauses))
 
     def test_accuse_true(self):
         engine = self.create_engine()
@@ -78,7 +86,8 @@ class TestEngine():
         )
         engine.accuse(accusation)
         expected = [[90], [94], [104]]
-        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
+        assert (
+            sorted(initial_clauses + expected) == sorted(engine.game.clauses))
 
     def test_accuse_false(self):
         engine = self.create_engine()
@@ -92,7 +101,8 @@ class TestEngine():
         )
         engine.accuse(accusation)
         expected = [[-90], [-94], [-104]]
-        assert sorted(initial_clauses + expected) == sorted(engine.game.clauses)
+        assert (
+            sorted(initial_clauses + expected) == sorted(engine.game.clauses))
 
     def test_every_card_present(self):
         engine = self.create_engine()
@@ -140,8 +150,7 @@ class TestEngine():
         game.players[0].people = ['Miss Scarlett']
         game.players[0].weapons = ['dagger', 'candlestick']
         game.players[0].rooms = ['ballroom']
-        return game;
-
+        return game
 
     def create_game(self):
         game = Game()
@@ -158,8 +167,9 @@ class TestEngine():
         return game
 
     def create_player(self, name, card_count):
-        player = Player(name=name,card_count=card_count)
+        player = Player(name=name, card_count=card_count)
         return player
+
 
 if __name__ == '__main__':
     unittest.main()
