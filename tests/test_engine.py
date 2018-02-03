@@ -136,7 +136,11 @@ class TestEngine():
     def test_player_hand(self):
         engine = self.create_engine()
         ph = engine.player_hand()
-        assert sorted(ph) == sorted([[22], [28], [33], [35]])
+        assert sorted(ph) == [
+            [-98], [-96], [-91], [-85], [-77], [-75], [-70], [-64], [-56],
+            [-54], [-49], [-43], [-42], [-41], [-40], [-39], [-38], [-37],
+            [-36], [-34], [-32], [-31], [-30], [-29], [-27], [-26], [-25],
+            [-24], [-23], [-14], [-12], [-7], [-1], [22], [28], [33], [35],]
 
     def create_game_sparse_players(self):
         game = Game()

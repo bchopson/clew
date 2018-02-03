@@ -233,5 +233,16 @@ class Engine():
         player = next(
             (p for p in self.game.players
              if p.name == self.game.primary_player), None)
-        return [[self.index_pair_number(self.CARDS.index(card), player.index)]
-                for card in player.cards]
+        other_players = [
+            index for index in self.all_indices if index != player.index]
+        clauses = []
+        for card in self.CARDS:
+            cIndex = self.CARDS.index(card)
+            if card in player.cards:
+                clauses.append([self.index_pair_number(cIndex, player.index)])
+                clauses += [
+                    [-self.index_pair_number(cIndex, pIndex)]
+                    for pIndex in other_players]
+            else:
+                clauses.append([-self.index_pair_number(cIndex, player.index)])
+        return clauses
