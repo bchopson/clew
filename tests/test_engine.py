@@ -47,7 +47,6 @@ class TestEngine():
             person='Mrs. White',
             weapon='dagger',
             room='ballroom',
-            was_card_shown=True,
             card_shown='Mrs. White'
         )
         engine.suggest(guess)
@@ -64,7 +63,6 @@ class TestEngine():
             person='Miss Scarlett',
             weapon='dagger',
             room='billiard room',
-            was_card_shown=False,
         )
         engine.suggest(guess)
         expected = [

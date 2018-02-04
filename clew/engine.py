@@ -101,7 +101,7 @@ class Engine():
 
     def suggest(self, guess):
         guesser_idx = PEOPLE.index(guess.guesser)
-        if guess.was_card_shown:
+        if guess.answerer:
             answerer_idx = PEOPLE.index(guess.answerer)
             for pIdx in self.players_between(guess.guesser, guess.answerer):
                 for card in guess.all_cards:
