@@ -69,36 +69,36 @@ def create_game():
     return _to_wrapped_json(Game.objects.exclude('clauses').get(id=game.id))
 
 
-@app.route(f'{api_prefix}/games/<string:game_id>/guesses', methods=['GET'])
-@app.route(f'{api_prefix}/games/<string:game_id>/guesses/<int:index>',
+@app.route(f'{api_prefix}/games/<string:game_id>/suggestions', methods=['GET'])
+@app.route(f'{api_prefix}/games/<string:game_id>/suggestions/<int:index>',
            methods=['GET'])
-def get_guess(game_id, index=None):
+def get_suggestion(game_id, index=None):
     game = Game.objects.get(id=game_id)
     if game is None:
         abort(404)
 
     if index is None:
         return jsonify(
-            {'data': [json.loads(guess.to_json()) for guess in game.guesses]})
+            {'data': [json.loads(suggestion.to_json()) for suggestion in game.suggestions]})
     else:
         try:
-            return _to_wrapped_json(game.guesses.get(index=index))
+            return _to_wrapped_json(game.suggestions.get(index=index))
         except DoesNotExist:
             abort(404)
 
 
-@app.route(f'{api_prefix}/games/<string:game_id>/guesses', methods=['POST'])
-def add_guess(game_id):
+@app.route(f'{api_prefix}/games/<string:game_id>/suggestions', methods=['POST'])
+def add_suggestion(game_id):
     game = Game.objects.get(id=game_id)
     if game is None:
         abort(404)
 
-    guess = Guess(**request.get_json(force=True))
-    guess.index = len(game.guesses)
+    suggestion = Suggestion(**request.get_json(force=True))
+    suggestion.index = len(game.suggestions)
     engine = Engine(game)
-    engine.suggest(guess)
+    engine.suggest(suggestion)
     game.save()
-    return _to_wrapped_json(guess)
+    return _to_wrapped_json(suggestion)
 
 
 @app.route(f'{api_prefix}/games/<string:game_id>/accusations', methods=['GET'])

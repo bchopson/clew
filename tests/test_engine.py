@@ -40,16 +40,16 @@ class TestEngine():
     def test_suggest_discover_opponent(self):
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
-        guess = Guess(
+        suggestion = Suggestion(
             index=0,
-            guesser='Col. Mustard',
+            suggester='Col. Mustard',
             answerer='Mr. Green',
             person='Mrs. White',
             weapon='dagger',
             room='ballroom',
             card_shown='Mrs. White'
         )
-        engine.suggest(guess)
+        engine.suggest(suggestion)
         expected = [[-45], [-49], [-56], [66]]
         assert (
             sorted(initial_clauses + expected) == sorted(engine.game.clauses))
@@ -57,14 +57,14 @@ class TestEngine():
     def test_suggest_discover_case_file(self):
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
-        guess = Guess(
+        suggestion = Suggestion(
             index=0,
-            guesser='Col. Mustard',
+            suggester='Col. Mustard',
             person='Miss Scarlett',
             weapon='dagger',
             room='billiard room',
         )
-        engine.suggest(guess)
+        engine.suggest(suggestion)
         expected = [
             [-1], [-7], [-16], [-43], [-49], [-58], [-64], [-70], [-79], [100]
         ]

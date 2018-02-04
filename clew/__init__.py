@@ -1,7 +1,7 @@
 from .models import (
     Accusation,
     Game,
-    Guess,
+    Suggestion,
     Player,
     PEOPLE,
     WEAPONS,

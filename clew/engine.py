@@ -99,47 +99,47 @@ class Engine():
             readable += output.format(player, self.CARDS[card_index], sep)
         return readable
 
-    def suggest(self, guess):
-        guesser_idx = PEOPLE.index(guess.guesser)
-        if guess.answerer:
-            answerer_idx = PEOPLE.index(guess.answerer)
-            for pIdx in self.players_between(guess.guesser, guess.answerer):
-                for card in guess.all_cards:
+    def suggest(self, suggestion):
+        suggester_idx = PEOPLE.index(suggestion.suggester)
+        if suggestion.answerer:
+            answerer_idx = PEOPLE.index(suggestion.answerer)
+            for pIdx in self.players_between(suggestion.suggester, suggestion.answerer):
+                for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
                     self.game.clauses.append(
                         [-self.index_pair_number(cIdx, pIdx)])
 
-            if guess.card_shown is None:
+            if suggestion.card_shown is None:
                 self.game.clauses.append(
                     [self.index_pair_number(
                         self.CARDS.index(card), answerer_idx)
-                     for card in guess.all_cards]
+                     for card in suggestion.all_cards]
                 )
             else:
-                cIdx = self.CARDS.index(guess.card_shown)
+                cIdx = self.CARDS.index(suggestion.card_shown)
                 self.game.clauses.append(
                     [self.index_pair_number(cIdx, answerer_idx)])
         else:
-            for pIdx in self.players_between(guess.guesser, guess.guesser):
-                for card in guess.all_cards:
+            for pIdx in self.players_between(suggestion.suggester, suggestion.suggester):
+                for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
                     self.game.clauses.append(
                         [-self.index_pair_number(cIdx, pIdx)])
-            if guess.guesser == self.game.primary_player:
-                for card in guess.all_cards:
+            if suggestion.suggester == self.game.primary_player:
+                for card in suggestion.all_cards:
                     if card not in self.primary_player.cards:
                         cIdx = self.CARDS.index(card)
                         self.game.clauses.append(
                             [self.index_pair_number(
                                 cIdx, self.case_file_index)])
             else:
-                for card in guess.all_cards:
+                for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
                     self.game.clauses.append([
                         self.index_pair_number(cIdx, self.case_file_index),
-                        self.index_pair_number(cIdx, guesser_idx)
+                        self.index_pair_number(cIdx, suggester_idx)
                     ])
-        self.game.guesses.append(guess)
+        self.game.suggestions.append(suggestion)
 
     def accuse(self, accusation):
         if (accusation.is_correct):

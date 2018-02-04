@@ -27,10 +27,10 @@ No two cards of ONE category is in the case file
 
 ### Suggestion
 
-Players between guesser and answerer do not have the cards
+Players between suggester and answerer do not have the cards
 
 Answerer has one of the cards
 
-If guesser is current player, then answerer has the card shown
+If suggester is current player, then answerer has the card shown
 
-If no answerer, either the guesser or the solution has the cards
+If no answerer, either the suggester or the solution has the cards
