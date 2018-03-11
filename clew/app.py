@@ -16,7 +16,7 @@ api_prefix = '/api/v1'
 
 
 def connect_db():
-    return mongoengine.connect(os.environ['DATABASE'])
+    return mongoengine.connect(host=os.environ['DATABASE'])
 
 
 @app.before_request
