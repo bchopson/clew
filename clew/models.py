@@ -57,7 +57,6 @@ class Suggestion(EmbeddedDocument):
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
     room = StringField(required=True, choices=T_ROOMS)
-    was_card_shown = BooleanField(required=True)
     card_shown = StringField(choices=T_PEOPLE+T_WEAPONS+T_ROOMS)
 
     @property
