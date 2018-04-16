@@ -1,4 +1,5 @@
 from mongoengine import *
+import datetime
 
 
 PEOPLE = [
@@ -51,13 +52,13 @@ class Player(EmbeddedDocument):
 
 
 class Suggestion(EmbeddedDocument):
-    index = IntField(required=True)
     suggester = StringField(required=True, choices=T_PEOPLE)
     answerer = StringField(choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
     room = StringField(required=True, choices=T_ROOMS)
     card_shown = StringField(choices=T_PEOPLE+T_WEAPONS+T_ROOMS)
+    insert_date = DateTimeField(required=True, default=datetime.datetime.now)
 
     @property
     def all_cards(self):
@@ -65,18 +66,17 @@ class Suggestion(EmbeddedDocument):
 
 
 class Accusation(EmbeddedDocument):
-    index = IntField(required=True)
     accuser = StringField(required=True, choices=T_PEOPLE)
     person = StringField(required=True, choices=T_PEOPLE)
     weapon = StringField(required=True, choices=T_WEAPONS)
     room = StringField(required=True, choices=T_ROOMS)
     is_correct = BooleanField(required=True)
+    insert_date = DateTimeField(required=True, default=datetime.datetime.now)
 
 
 class Game(Document):
     primary_player = StringField(choices=T_PEOPLE)
     players = SortedListField(EmbeddedDocumentField(Player), ordering="index")
-    suggestions = SortedListField(EmbeddedDocumentField(Suggestion), ordering="index")
-    accusations = SortedListField(
-        EmbeddedDocumentField(Accusation), ordering="index")
+    suggestions = SortedListField(EmbeddedDocumentField(Suggestion), ordering="insert_date")
+    accusations = SortedListField(EmbeddedDocumentField(Accusation), ordering="insert_date")
     clauses = ListField(ListField(IntField()))

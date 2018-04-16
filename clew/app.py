@@ -52,8 +52,9 @@ def get_game(game_id=None):
     if game_id is None:
         return _to_wrapped_json(Game.objects.exclude('clauses'))
     else:
-        game = Game.objects.exclude('clauses').get(id=game_id)
-        if game is None:
+        try:
+            game = Game.objects.exclude('clauses').get(id=game_id)
+        except DoesNotExist:
             abort(404)
         return _to_wrapped_json(game)
 
@@ -70,31 +71,24 @@ def create_game():
 
 
 @app.route(f'{api_prefix}/games/<string:game_id>/suggestions', methods=['GET'])
-@app.route(f'{api_prefix}/games/<string:game_id>/suggestions/<int:index>',
-           methods=['GET'])
-def get_suggestion(game_id, index=None):
-    game = Game.objects.get(id=game_id)
-    if game is None:
+def get_suggestions(game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
         abort(404)
 
-    if index is None:
-        return jsonify(
-            {'data': [json.loads(suggestion.to_json()) for suggestion in game.suggestions]})
-    else:
-        try:
-            return _to_wrapped_json(game.suggestions.get(index=index))
-        except DoesNotExist:
-            abort(404)
+    return jsonify(
+        {'data': [json.loads(suggestion.to_json()) for suggestion in game.suggestions]})
 
 
 @app.route(f'{api_prefix}/games/<string:game_id>/suggestions', methods=['POST'])
 def add_suggestion(game_id):
-    game = Game.objects.get(id=game_id)
-    if game is None:
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
         abort(404)
 
     suggestion = Suggestion(**request.get_json(force=True))
-    suggestion.index = len(game.suggestions)
     engine = Engine(game)
     engine.suggest(suggestion)
     game.save()
@@ -102,34 +96,25 @@ def add_suggestion(game_id):
 
 
 @app.route(f'{api_prefix}/games/<string:game_id>/accusations', methods=['GET'])
-@app.route(f'{api_prefix}/games/<string:game_id>/accusations/<int:index>',
-           methods=['GET'])
-def get_accusation(game_id, index=None):
-    game = Game.objects.get(id=game_id)
-    if game is None:
+def get_accusations(game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
         abort(404)
 
-    if index is None:
-        return jsonify(
-            {'data': [
-                json.loads(accusation.to_json())
-                for accusation in game.accusations]})
-    else:
-        try:
-            return _to_wrapped_json(game.accusations.get(index=index))
-        except DoesNotExist:
-            abort(404)
+    return jsonify(
+        {'data': [json.loads(accusation.to_json()) for accusation in game.accusations]})
 
 
 @app.route(f'{api_prefix}/games/<string:game_id>/accusations',
            methods=['POST'])
 def add_accusation(game_id):
-    game = Game.objects.get(id=game_id)
-    if game is None:
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
         abort(404)
 
     accusation = Accusation(**request.get_json(force=True))
-    accusation.index = len(game.accusations)
     engine = Engine(game)
     engine.accuse(accusation)
     game.save()
@@ -138,7 +123,11 @@ def add_accusation(game_id):
 
 @app.route(f'{api_prefix}/games/<string:game_id>/notebook', methods=['GET'])
 def get_notebook(game_id):
-    game = Game.objects.get(id=game_id)
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
+        abort(404)
+
     engine = Engine(game)
     return jsonify({'data': engine.notebook})
 
