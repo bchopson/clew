@@ -37,11 +37,63 @@ class TestEngine():
             "Col. Mustard has Miss Scarlett || Case File has dagger "
             "|| Case File doesn't have kitchen")
 
+    def test_undo_last_turn_suggestion(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.game.clauses)
+        suggestion = Suggestion(
+            suggester='Col. Mustard',
+            answerer='Mr. Green',
+            person='Mrs. White',
+            weapon='dagger',
+            room='ballroom',
+            card_shown='Mrs. White'
+        )
+        engine.suggest(suggestion)
+        initial_clauses += [[-45], [-49], [-56], [66]]
+        accusation = Accusation(
+            accuser='Mrs. White',
+            person='Prof. Plum',
+            weapon='lead pipe',
+            room='lounge',
+            is_correct=True
+        )
+        engine.accuse(accusation)
+        engine.undo_last_turn()
+        assert (
+            sorted(initial_clauses) == sorted(engine.game.clauses))
+
+
+    def test_undo_last_turn_accusation(self):
+        engine = self.create_engine()
+        initial_clauses = list(engine.game.clauses)
+        accusation = Accusation(
+            accuser='Mrs. White',
+            person='Prof. Plum',
+            weapon='lead pipe',
+            room='lounge',
+            is_correct=True
+        )
+        engine.accuse(accusation)
+        initial_clauses += [[90], [94], [104]]
+
+        suggestion = Suggestion(
+            suggester='Col. Mustard',
+            answerer='Mr. Green',
+            person='Mrs. White',
+            weapon='dagger',
+            room='ballroom',
+            card_shown='Mrs. White'
+        )
+        engine.suggest(suggestion)
+        engine.undo_last_turn()
+        assert (
+            sorted(initial_clauses) == sorted(engine.game.clauses))
+
+
     def test_suggest_discover_opponent(self):
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
         suggestion = Suggestion(
-            index=0,
             suggester='Col. Mustard',
             answerer='Mr. Green',
             person='Mrs. White',
@@ -58,7 +110,6 @@ class TestEngine():
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
         suggestion = Suggestion(
-            index=0,
             suggester='Col. Mustard',
             person='Miss Scarlett',
             weapon='dagger',
@@ -75,7 +126,6 @@ class TestEngine():
         engine = self.create_engine()
         initial_clauses = list(engine.game.clauses)
         accusation = Accusation(
-            index=0,
             accuser='Mrs. White',
             person='Prof. Plum',
             weapon='lead pipe',

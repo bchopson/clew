@@ -81,3 +81,4 @@ class Game(Document):
     suggestions = SortedListField(EmbeddedDocumentField(Suggestion), ordering="insert_date")
     accusations = SortedListField(EmbeddedDocumentField(Accusation), ordering="insert_date")
     clauses = ListField(ListField(IntField()))
+    last_turn_clauses = ListField(ListField(IntField()))

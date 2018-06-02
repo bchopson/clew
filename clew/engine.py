@@ -99,51 +99,77 @@ class Engine():
             readable += output.format(player, self.CARDS[card_index], sep)
         return readable
 
+    def undo_last_turn(self):
+        if (self.game.suggestions or self.game.accusations) and self.game.last_turn_clauses:
+            if self.game.suggestions and self.game.accusations:
+                recent_suggestion = self.game.suggestions[-1]
+                recent_accusation = self.game.accusations[-1]
+
+                if recent_suggestion.insert_date > recent_accusation.insert_date:
+                    self.game.suggestions = self.game.suggestions[:-1]
+                else:
+                    self.game.accusations = self.game.accusations[:-1]
+            elif self.game.suggestions:
+                self.game.suggestions = self.game.suggestions[:-1]
+            elif self.game.accusations:
+                self.game.accusations = self.game.accusations[:-1]
+
+            self.game.clauses = [
+                clause for clause in self.game.clauses
+                if clause not in self.game.last_turn_clauses
+            ]
+            return True
+        return False
+
     def suggest(self, suggestion):
         suggester_idx = PEOPLE.index(suggestion.suggester)
+        clauses = []
         if suggestion.answerer:
             answerer_idx = PEOPLE.index(suggestion.answerer)
             for pIdx in self.players_between(suggestion.suggester, suggestion.answerer):
                 for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
-                    self.game.clauses.append(
+                    clauses.append(
                         [-self.index_pair_number(cIdx, pIdx)])
 
             if suggestion.card_shown is None:
-                self.game.clauses.append(
+                clauses.append(
                     [self.index_pair_number(
                         self.CARDS.index(card), answerer_idx)
                      for card in suggestion.all_cards]
                 )
             else:
                 cIdx = self.CARDS.index(suggestion.card_shown)
-                self.game.clauses.append(
+                clauses.append(
                     [self.index_pair_number(cIdx, answerer_idx)])
         else:
             for pIdx in self.players_between(suggestion.suggester, suggestion.suggester):
                 for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
-                    self.game.clauses.append(
+                    clauses.append(
                         [-self.index_pair_number(cIdx, pIdx)])
             if suggestion.suggester == self.game.primary_player:
                 for card in suggestion.all_cards:
                     if card not in self.primary_player.cards:
                         cIdx = self.CARDS.index(card)
-                        self.game.clauses.append(
+                        clauses.append(
                             [self.index_pair_number(
                                 cIdx, self.case_file_index)])
             else:
                 for card in suggestion.all_cards:
                     cIdx = self.CARDS.index(card)
-                    self.game.clauses.append([
+                    clauses.append([
                         self.index_pair_number(cIdx, self.case_file_index),
                         self.index_pair_number(cIdx, suggester_idx)
                     ])
+        self.game.clauses += clauses
+        self.game.last_turn_clauses = clauses
         self.game.suggestions.append(suggestion)
 
     def accuse(self, accusation):
+        clauses = []
         if (accusation.is_correct):
-            self.game.clauses += [
+            clauses += [
                 [self.index_pair_number(
                     self.CARDS.index(accusation.person),
                     self.case_file_index)],
@@ -155,7 +181,7 @@ class Engine():
                     self.case_file_index)]
             ]
         else:
-            self.game.clauses += [
+            clauses += [
                 [-self.index_pair_number(
                     self.CARDS.index(accusation.person),
                     self.case_file_index)],
@@ -166,6 +192,8 @@ class Engine():
                     self.CARDS.index(accusation.room),
                     self.case_file_index)]
             ]
+        self.game.clauses += clauses
+        self.game.last_turn_clauses = clauses
         self.game.accusations.append(accusation)
 
     def add_initial_clauses(self):

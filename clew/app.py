@@ -132,6 +132,20 @@ def get_notebook(game_id):
     return jsonify({'data': engine.notebook})
 
 
+@app.route(f'{api_prefix}/games/<string:game_id>/undo', methods=['POST'])
+def undo_last_turn(game_id):
+    try:
+        game = Game.objects.get(id=game_id)
+    except DoesNotExist:
+        abort(404)
+
+    engine = Engine(game)
+    if engine.undo_last_turn():
+        game.save()
+        return jsonify({ 'data': game.last_turn_clauses })
+    return abort(422)
+
+
 def _to_wrapped_json(mongo_object):
     return jsonify({'data': json.loads(mongo_object.to_json())})
 
