@@ -39,7 +39,7 @@ class Player(EmbeddedDocument):
         EmbeddedDocument.__init__(self, *args, **kwargs)
         self.index = PEOPLE.index(kwargs['name']) if kwargs['name'] else -1
 
-    user_name = StringField(required=True)
+    user_name = StringField()
     name = StringField(required=True, choices=T_PEOPLE)
     card_count = IntField(required=True)
     people = ListField(StringField(choices=T_PEOPLE))
